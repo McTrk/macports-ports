@@ -19,5 +19,13 @@ checksums           rmd160 620b0b9544b28e7abaa46797791b55c3c115c03a \
 
 depends_lib-append  port:octave-signal
 
-patchfiles-append   patch-fixes_for_4.2.diff
+patchfiles-append   patch-fixes_for_4.2.diff \
+    patch-fixes_for_4.4.0_5.diff
 patch.pre_args      -p1
+
+post-patch {
+    reinplace -W ${worksrcpath}/src -E "\
+        s/\[\[:<:\]\]gripe_(\[\[:alnum:\]_\]*)\[\[:>:\]\]/err_\\1/g; \
+        s|#include +<octave/gripes.h> *$|#include <octave/errwarn.h>|;\
+        " gf.cc galois.cc ov-galois.cc galois-def.h galois-def.cc galoisfield.cc
+}
