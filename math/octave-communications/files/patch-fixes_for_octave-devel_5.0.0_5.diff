@@ -1,0 +1,882 @@
+diff -Naur a/src/galois-def.cc b/src/galois-def.cc
+--- a/src/galois-def.cc	2015-04-04 12:28:43.000000000 -0400
++++ b/src/galois-def.cc	2018-07-01 15:44:50.000000000 -0400
+@@ -21,7 +21,7 @@
+ #include "galois.h"
+ 
+ void
+-gripe_nonconformant_galois (const char *op, int op1_m, int op1_primpoly,
++err_nonconformant_galois (const char *op, int op1_m, int op1_primpoly,
+                             int op2_m, int op2_primpoly)
+ {
+   (*current_liboctave_error_handler)
+@@ -31,98 +31,98 @@
+ }
+ 
+ void
+-gripe_nonconformant_galois (const char *op, int m)
++err_nonconformant_galois (const char *op, int m)
+ {
+   (*current_liboctave_error_handler)
+     ("%s: element exceeds range of galois field GF(2^%d)", op, m);
+ }
+ 
+ void
+-gripe_divzero_galois (const char *op)
++err_divzero_galois (const char *op)
+ {
+   (*current_liboctave_error_handler)
+     ("%s: division by zero in galois field", op);
+ }
+ 
+ void
+-gripe_invalid_galois (void)
++err_invalid_galois (void)
+ {
+   (*current_liboctave_error_handler)
+     ("invalid data in Galois Field");
+ }
+ 
+ void
+-gripe_range_galois (int m)
++err_range_galois (int m)
+ {
+   (*current_liboctave_error_handler)
+     ("data outside range of Galois Field GF(2^%d)", m);
+ }
+ 
+ void
+-gripe_integer_galois (void)
++err_integer_galois (void)
+ {
+   (*current_liboctave_error_handler)
+     ("data in Galois Field must be integer");
+ }
+ 
+ void
+-gripe_copy_invalid_galois (void)
++err_copy_invalid_galois (void)
+ {
+   (*current_liboctave_error_handler)
+     ("trying to copy invalid Galois Field");
+ }
+ 
+ void
+-gripe_differ_galois (void)
++err_differ_galois (void)
+ {
+   (*current_liboctave_error_handler)
+     ("can not assign data between two different Galois Fields");
+ }
+ 
+ void
+-gripe_invalid_table_galois (void)
++err_invalid_table_galois (void)
+ {
+   (*current_liboctave_error_handler)
+     ("invalid lookup table in Galois Field");
+ }
+ 
+ void
+-gripe_square_galois (void)
++err_square_galois (void)
+ {
+   (*current_liboctave_error_handler)
+     ("for A^x, A must be square and x scalar");
+ }
+ 
+ void
+-gripe_integer_power_galois (void)
++err_integer_power_galois (void)
+ {
+   (*current_liboctave_error_handler)
+     ("exponent must be integer for binary operator '^' with galois field");
+ }
+ 
+ void
+-gripe_order_galois (int m)
++err_order_galois (int m)
+ {
+   (*current_liboctave_error_handler)
+     ("invalid order %d for Galois Field", m);
+ }
+ 
+ void
+-gripe_degree_galois (int m)
++err_degree_galois (int m)
+ {
+   (*current_liboctave_error_handler)
+     ("invalid degree for primitive polynomial (%d) of Galois Field", m);
+ }
+ 
+ void
+-gripe_irred_galois (int m)
++err_irred_galois (int m)
+ {
+   (*current_liboctave_error_handler)
+     ("primitive polynomial (%d) of Galois Field must be irreducible", m);
+ }
+ 
+ void
+-gripe_init_galois (void)
++err_init_galois (void)
+ {
+   (*current_liboctave_error_handler)
+     ("unable to initialize Galois Field");
+diff -Naur a/src/galois-def.h b/src/galois-def.h
+--- a/src/galois-def.h	2015-04-04 12:28:43.000000000 -0400
++++ b/src/galois-def.h	2018-07-01 15:44:50.000000000 -0400
+@@ -21,22 +21,22 @@
+ #if !defined (octave_galois_defs_h)
+ #define octave_galois_defs_h 1
+ 
+-void gripe_nonconformant_galois (const char *op, int op1_m, int op1_primpoly,
++void err_nonconformant_galois (const char *op, int op1_m, int op1_primpoly,
+                                  int op2_m, int op2_primpoly);
+-void gripe_nonconformant_galois (const char *op, int m);
+-void gripe_divzero_galois (const char *op);
+-void gripe_invalid_galois (void);
+-void gripe_range_galois (int m);
+-void gripe_integer_galois (void);
+-void gripe_copy_invalid_galois (void);
+-void gripe_differ_galois (void);
+-void gripe_invalid_table_galois (void);
+-void gripe_square_galois (void);
+-void gripe_integer_power_galois (void);
+-void gripe_order_galois (int m);
+-void gripe_degree_galois (int m);
+-void gripe_irred_galois (int m);
+-void gripe_init_galois (void);
++void err_nonconformant_galois (const char *op, int m);
++void err_divzero_galois (const char *op);
++void err_invalid_galois (void);
++void err_range_galois (int m);
++void err_integer_galois (void);
++void err_copy_invalid_galois (void);
++void err_differ_galois (void);
++void err_invalid_table_galois (void);
++void err_square_galois (void);
++void err_integer_power_galois (void);
++void err_order_galois (int m);
++void err_degree_galois (int m);
++void err_irred_galois (int m);
++void err_init_galois (void);
+ 
+ // Compute X % N, where N is 2^M - 1, without a slow divide
+ #define MODN(X, M, N) \
+@@ -52,12 +52,12 @@
+   { \
+     if (!M1.have_field () || !M2.have_field ()) \
+       { \
+-        gripe_invalid_galois (); \
++        err_invalid_galois (); \
+         return RET (); \
+       } \
+     if ((M1.primpoly () != M2.primpoly ()) || (M1.m () != M2.m ())) \
+       { \
+-        gripe_nonconformant_galois (OP, M1.m (), M1.primpoly (), M2.m (), M2.primpoly ()); \
++        err_nonconformant_galois (OP, M1.m (), M1.primpoly (), M2.m (), M2.primpoly ()); \
+         return RET (); \
+       } \
+   }
+@@ -69,7 +69,7 @@
+  \
+     if (!M1.have_field ()) \
+       { \
+-        gripe_invalid_galois (); \
++        err_invalid_galois (); \
+         return RET (); \
+       } \
+     for (int i = 0; i < nr; i++) \
+@@ -77,12 +77,12 @@
+         { \
+           if ((M1(i, j) < 0) || (M1(i, j) > NN)) \
+             { \
+-              gripe_nonconformant_galois (OP, M1.m ()); \
++              err_nonconformant_galois (OP, M1.m ()); \
+               return RET (); \
+             } \
+           if (((double)M1(i, j) - (double)((int)M1(i, j))) != 0.) \
+             { \
+-              gripe_nonconformant_galois (OP, M1.m ()); \
++              err_nonconformant_galois (OP, M1.m ()); \
+               return RET (); \
+             } \
+         } \
+@@ -98,7 +98,7 @@
+         { \
+           if (M(i, j) == 0) \
+             { \
+-              gripe_divzero_galois (OP); \
++              err_divzero_galois (OP); \
+               return RET (); \
+             } \
+         } \
+@@ -137,7 +137,7 @@
+                 r(i, j) = (int)m1(i, j) ^ (int)m2(0, 0); \
+           } \
+         else \
+-          gripe_nonconformant (#OP, m1_nr, m1_nc, m2_nr, m2_nc); \
++          err_nonconformant (m1_nr, m1_nc, m2_nr, m2_nc); \
+       } \
+     else \
+       { \
+@@ -221,7 +221,7 @@
+               } \
+           } \
+         else \
+-          gripe_nonconformant (#F, m1_nr, m1_nc, m2_nr, m2_nc); \
++          err_nonconformant (m1_nr, m1_nc, m2_nr, m2_nc); \
+       } \
+     else \
+       if (m1_nr > 0 && m1_nc > 0) \
+@@ -289,7 +289,7 @@
+                 r(i, j) = C1 (m1(i, j)) OP C2 (m2(0, 0)); \
+           } \
+         else \
+-          gripe_nonconformant (#F, m1_nr, m1_nc, m2_nr, m2_nc); \
++          err_nonconformant (m1_nr, m1_nc, m2_nr, m2_nc); \
+       } \
+  \
+     return r; \
+@@ -350,7 +350,7 @@
+                   OP (m2(0, 0) != ZERO); \
+           } \
+         else if ((m1_nr != 0 || m1_nc != 0) && (m2_nr != 0 || m2_nc != 0)) \
+-          gripe_nonconformant (#F, m1_nr, m1_nc, m2_nr, m2_nc); \
++          err_nonconformant (m1_nr, m1_nc, m2_nr, m2_nc); \
+       } \
+  \
+     return r; \
+diff -Naur a/src/galois.cc b/src/galois.cc
+--- a/src/galois.cc	2018-07-01 15:39:16.000000000 -0400
++++ b/src/galois.cc	2018-07-01 15:44:50.000000000 -0400
+@@ -20,7 +20,7 @@
+ 
+ #include <octave/config.h>
+ #include <octave/error.h>
+-#include <octave/gripes.h>
++#include <octave/errwarn.h>
+ #include <octave/mx-op-defs.h>
+ 
+ #include "galois.h"
+@@ -45,7 +45,7 @@
+         {
+           if ((a(i, j) < 0) || (a(i, j) > _n))
+             {
+-              gripe_range_galois (_m);
++              err_range_galois (_m);
+               return;
+             }
+           xelem(i, j) = (int)a(i, j);
+@@ -67,7 +67,7 @@
+         {
+           if ((a(i, j) < 0) || (a(i, j) > _n))
+             {
+-              gripe_range_galois (_m);
++              err_range_galois (_m);
+               return;
+             }
+           xelem(i, j) = (int)a(i, j);
+@@ -89,12 +89,12 @@
+         {
+           if ((a(i, j) < 0) || (a(i, j) > _n))
+             {
+-              gripe_range_galois (_m);
++              err_range_galois (_m);
+               return;
+             }
+           if ((a(i, j) - (double)((int)a(i, j))) != 0.)
+             {
+-              gripe_integer_galois ();
++              err_integer_galois ();
+               return;
+             }
+           xelem(i, j) = (int)a(i, j);
+@@ -113,7 +113,7 @@
+   // Check the validity of the data in the matrix
+   if ((val < 0) || (val > _n))
+     {
+-      gripe_range_galois (_m);
++      err_range_galois (_m);
+       return;
+     }
+ 
+@@ -129,13 +129,13 @@
+   // Check the validity of the data in the matrix
+   if ((val < 0) || (val > _n))
+     {
+-      gripe_range_galois (_m);
++      err_range_galois (_m);
+       return;
+     }
+ 
+   if ((val - (double)((int)val)) != 0.)
+     {
+-      gripe_integer_galois ();
++      err_integer_galois ();
+       return;
+     }
+ 
+@@ -147,7 +147,7 @@
+ 
+   if (!a.have_field ())
+     {
+-      gripe_copy_invalid_galois ();
++      err_copy_invalid_galois ();
+       field = NULL;
+       return;
+     }
+@@ -167,7 +167,7 @@
+ {
+   if (!t.have_field ())
+     {
+-      gripe_copy_invalid_galois ();
++      err_copy_invalid_galois ();
+       if (have_field ())
+         stored_galois_fields.delete_galois_field (field);
+       field = NULL;
+@@ -204,19 +204,19 @@
+     {
+       if ((m () != a.m ()) || (primpoly () != a.primpoly ()))
+         {
+-          gripe_differ_galois ();
++          err_differ_galois ();
+           return *this;
+         }
+     }
+   else
+     {
+-      gripe_invalid_galois ();
++      err_invalid_galois ();
+       return *this;
+     }
+ 
+   if (nr != a_nr || nc != a_nc)
+     {
+-      gripe_nonconformant ("operator +=", nr, nc, a_nr, a_nc);
++      err_nonconformant (nr, nc, a_nr, a_nc);
+       return *this;
+     }
+ 
+@@ -240,19 +240,19 @@
+     {
+       if ((m () != a.m ()) || (primpoly () != a.primpoly ()))
+         {
+-          gripe_differ_galois ();
++          err_differ_galois ();
+           return *this;
+         }
+     }
+   else
+     {
+-      gripe_invalid_galois ();
++      err_invalid_galois ();
+       return *this;
+     }
+ 
+   if (nr != a_nr || nc != a_nc)
+     {
+-      gripe_nonconformant ("operator -=", nr, nc, a_nr, a_nc);
++      err_nonconformant (nr, nc, a_nr, a_nc);
+       return *this;
+     }
+ 
+@@ -307,12 +307,12 @@
+         {
+           if ((rb(i, j) < 0) || (rb(i, j) > _n))
+             {
+-              gripe_range_galois (m ());
++              err_range_galois (m ());
+               return *this;
+             }
+           if ((rb(i, j) - (double)((int)rb(i, j))) != 0.)
+             {
+-              gripe_integer_galois ();
++              err_integer_galois ();
+               return *this;
+             }
+           tmp(i, j) = (int)rb(i, j);
+@@ -345,12 +345,12 @@
+ #if 0
+           if ((ra(i, j) < 0) || (ra(i, j) > _n))
+             {
+-              gripe_range_galois (rb.m ());
++              err_range_galois (rb.m ());
+               return retval;
+             }
+           if ((ra(i, j) - (double)((int)ra(i, j))) != 0.)
+             {
+-              gripe_integer_galois ();
++              err_integer_galois ();
+               return retval;
+             }
+           retval(i, j) = (int)ra(i, j);
+@@ -483,13 +483,13 @@
+     {
+       if ((a.m () != b.m ()) || (a.primpoly () != b.primpoly ()))
+         {
+-          gripe_differ_galois ();
++          err_differ_galois ();
+           return galois ();
+         }
+     }
+   else
+     {
+-      gripe_invalid_galois ();
++      err_invalid_galois ();
+       return galois ();
+     }
+ 
+@@ -518,7 +518,7 @@
+     {
+       if (a_nr != b_nr || a_nc != b_nc)
+         {
+-          gripe_nonconformant ("operator .^", a_nr, a_nc, a_nr, a_nc);
++          err_nonconformant (a_nr, a_nc, a_nr, a_nc);
+           return galois ();
+         }
+ 
+@@ -549,7 +549,7 @@
+ 
+   if (a_nr != b_nr || a_nc != b_nc)
+     {
+-      gripe_nonconformant ("operator .^", a_nr, a_nc, b_nr, b_nc);
++      err_nonconformant (a_nr, a_nc, b_nr, b_nc);
+       return galois ();
+     }
+ 
+@@ -578,7 +578,7 @@
+ 
+   if ((double)bi != b)
+     {
+-      gripe_integer_galois ();
++      err_integer_galois ();
+       return galois ();
+     }
+ 
+@@ -625,7 +625,7 @@
+   int bi = (int)b;
+   if ((double)bi != b)
+     {
+-      gripe_integer_power_galois ();
++      err_integer_power_galois ();
+       return galois ();
+     }
+ 
+@@ -642,19 +642,19 @@
+     {
+       if ((a.m () != b.m ()) || (a.primpoly () != b.primpoly ()))
+         {
+-          gripe_differ_galois ();
++          err_differ_galois ();
+           return galois ();
+         }
+     }
+   else
+     {
+-      gripe_invalid_galois ();
++      err_invalid_galois ();
+       return galois ();
+     }
+ 
+   if (nr != 1 || nc != 1)
+     {
+-      gripe_square_galois ();
++      err_square_galois ();
+       return galois ();
+     }
+   else
+@@ -670,12 +670,12 @@
+ 
+   if (!a.have_field ())
+     {
+-      gripe_invalid_galois ();
++      err_invalid_galois ();
+       return retval;
+     }
+ 
+   if (nr == 0 || nc == 0 || nr != nc)
+-    gripe_square_galois ();
++    err_square_galois ();
+   else if (b == 0)
+     {
+       retval = galois (nr, nc, 0, a.m (), a.primpoly ());
+@@ -738,13 +738,13 @@
+     {
+       if ((a.m () != b.m ()) || (a.primpoly () != b.primpoly ()))
+         {
+-          gripe_differ_galois ();
++          err_differ_galois ();
+           return galois ();
+         }
+     }
+   else
+     {
+-      gripe_invalid_galois ();
++      err_invalid_galois ();
+       return galois ();
+     }
+ 
+@@ -758,7 +758,7 @@
+     return product (a, b);
+   else if (a_nc != b_nr)
+     {
+-      gripe_nonconformant ("operator *", a_nr, a_nc, b_nr, b_nc);
++      err_nonconformant (a_nr, a_nc, b_nr, b_nc);
+       return galois ();
+     }
+   else
+@@ -810,7 +810,7 @@
+ {
+   if (!have_field ())
+     {
+-      gripe_invalid_galois ();
++      err_invalid_galois ();
+       return galois ();
+     }
+ 
+@@ -842,7 +842,7 @@
+ {
+   if (!have_field ())
+     {
+-      gripe_invalid_galois ();
++      err_invalid_galois ();
+       return galois ();
+     }
+ 
+@@ -867,7 +867,7 @@
+ {
+   if (!have_field ())
+     {
+-      gripe_invalid_galois ();
++      err_invalid_galois ();
+       return galois ();
+     }
+ 
+@@ -914,7 +914,7 @@
+   bool warned = false;
+   if (!have_field ())
+     {
+-      gripe_invalid_galois ();
++      err_invalid_galois ();
+       return galois ();
+     }
+ 
+@@ -949,7 +949,7 @@
+   bool warned = false;
+   if (!have_field ())
+     {
+-      gripe_invalid_galois ();
++      err_invalid_galois ();
+       return galois ();
+     }
+ 
+@@ -1219,12 +1219,12 @@
+ 
+   if (!have_field () || !b.have_field ())
+     {
+-      gripe_invalid_galois ();
++      err_invalid_galois ();
+       return galois ();
+     }
+   else if ((m () != b.m ()) || (primpoly () != b.primpoly ()))
+     {
+-      gripe_differ_galois ();
++      err_differ_galois ();
+       return galois ();
+     }
+ 
+@@ -1420,7 +1420,7 @@
+       int a_nr = a.rows ();
+       int b_nr = b.rows ();
+ 
+-      gripe_nonconformant ("operator /", a_nr, a_nc, b_nr, b_nc);
++      err_nonconformant (a_nr, a_nc, b_nr, b_nc);
+       return galois ();
+     }
+ 
+@@ -1464,7 +1464,7 @@
+       int a_nc = a.cols ();
+       int b_nc = b.cols ();
+ 
+-      gripe_nonconformant ("operator \\", a_nr, a_nc, b_nr, b_nc);
++      err_nonconformant (a_nr, a_nc, b_nr, b_nc);
+       return galois ();
+     }
+ 
+diff -Naur a/src/galoisfield.cc b/src/galoisfield.cc
+--- a/src/galoisfield.cc	2015-04-04 12:28:43.000000000 -0400
++++ b/src/galoisfield.cc	2018-07-01 15:44:50.000000000 -0400
+@@ -48,7 +48,7 @@
+   m = _m;
+   if ((m < 1) || (m > __OCTAVE_GALOIS_MAX_M))
+     {
+-      gripe_order_galois (m);
++      err_order_galois (m);
+       return;
+     }
+   n = (1<<m) -1;
+@@ -58,7 +58,7 @@
+     {
+       if ((_primpoly & (0x7FFFFFFF - (1<<(m+1)) + 1)) || !(_primpoly & (1<<m)))
+         {
+-          gripe_degree_galois (primpoly);
++          err_degree_galois (primpoly);
+           return;
+         }
+       primpoly = _primpoly;
+@@ -90,14 +90,14 @@
+ 
+   if (mask != 1)
+     {
+-      gripe_irred_galois (primpoly);
++      err_irred_galois (primpoly);
+       return;
+     }
+ 
+   for (int i = 0; i < n+1; i++)
+     if (index_of(i) > n)
+       {
+-        gripe_irred_galois (primpoly);
++        err_irred_galois (primpoly);
+         return;
+       }
+ 
+@@ -158,7 +158,7 @@
+   ptr = new galois_field_node (m, primpoly);
+   if (ptr->count ==  0)
+     {
+-      gripe_init_galois ();
++      err_init_galois ();
+       return ptr;
+     }
+   if (first)
+diff -Naur a/src/genqamdemod.cc b/src/genqamdemod.cc
+--- a/src/genqamdemod.cc	2015-04-04 12:28:43.000000000 -0400
++++ b/src/genqamdemod.cc	2018-07-01 15:44:50.000000000 -0400
+@@ -16,6 +16,7 @@
+ 
+ #include <octave/oct.h>
+ 
++#define empty_arg(n, r, c) ((r) == 0 || (c) == 0)
+ DEFUN_DLD (genqamdemod, args, ,
+  "-*- texinfo -*-\n\
+ @deftypefn {Loadable Function} {@var{y} =} genqamdemod (@var{x}, @var{C})\n\
+diff -Naur a/src/gf.cc b/src/gf.cc
+--- a/src/gf.cc	2015-04-04 12:28:43.000000000 -0400
++++ b/src/gf.cc	2018-07-01 15:44:50.000000000 -0400
+@@ -31,7 +31,7 @@
+ 
+ #include <octave/config.h>
+ #include <octave/defun-dld.h>
+-#include <octave/gripes.h>
++#include <octave/errwarn.h>
+ #include <octave/oct-locbuf.h>
+ #include <octave/ov.h>
+ #include <octave/utils.h>
+@@ -40,6 +40,7 @@
+ #include "galois.h"
+ #include "ov-galois.h"
+ 
++#define empty_arg(n, r, c) ((r) == 0 || (c) == 0)
+ static bool galois_type_loaded = false;
+ 
+ // PKG_ADD: autoload ("isgalois", "gf.oct");
+@@ -142,7 +143,7 @@
+ 
+   if ((!galois_type_loaded) || (a.type_id () !=
+                                 octave_galois::static_type_id ()))
+-    gripe_wrong_type_arg ("gdiag", a);
++    err_wrong_type_arg ("gdiag", a);
+   else
+     {
+       galois m = ((const octave_galois&) a.get_rep ()).galois_value ();
+@@ -196,7 +197,7 @@
+             }
+         }
+       else
+-        gripe_wrong_type_arg ("gdiag", a);
++        err_wrong_type_arg ("gdiag", a);
+     }
+   return retval;
+ }
+@@ -302,7 +303,7 @@
+       if ((!galois_type_loaded) || (args(0).type_id () !=
+                                     octave_galois::static_type_id ()))
+         {
+-          gripe_wrong_type_arg ("greshape", args(0));
++          err_wrong_type_arg ("greshape", args(0));
+           return retval;
+         }
+       galois a = ((const octave_galois&) args(0).get_rep ()).galois_value ();
+@@ -372,7 +373,7 @@
+                 } \
+               else \
+                 { \
+-                  gripe_wrong_type_arg (#FCN, arg); \
++                  err_wrong_type_arg (#FCN, arg); \
+                   return retval; \
+                 } \
+             } \
+@@ -469,7 +470,7 @@
+   if (!galois_type_loaded || (args(0).type_id () !=
+                               octave_galois::static_type_id ()))
+     {
+-      gripe_wrong_type_arg ("gsqrt", args(0));
++      err_wrong_type_arg ("gsqrt", args(0));
+       return retval;
+     }
+ 
+@@ -508,7 +509,7 @@
+   if (!galois_type_loaded || (args(0).type_id () !=
+                               octave_galois::static_type_id ()))
+     {
+-      gripe_wrong_type_arg ("glog", args(0));
++      err_wrong_type_arg ("glog", args(0));
+       return retval;
+     }
+ 
+@@ -547,7 +548,7 @@
+   if (!galois_type_loaded || (args(0).type_id () !=
+                               octave_galois::static_type_id ()))
+     {
+-      gripe_wrong_type_arg ("gexp", args(0));
++      err_wrong_type_arg ("gexp", args(0));
+       return retval;
+     }
+ 
+@@ -962,7 +963,7 @@
+   if (!galois_type_loaded || (arg.type_id () !=
+                               octave_galois::static_type_id ()))
+     {
+-      gripe_wrong_type_arg ("glu", arg);
++      err_wrong_type_arg ("glu", arg);
+       return retval;
+     }
+ 
+@@ -1049,7 +1050,7 @@
+   if (!galois_type_loaded || (arg.type_id () !=
+                               octave_galois::static_type_id ()))
+     {
+-      gripe_wrong_type_arg ("ginverse", arg);
++      err_wrong_type_arg ("ginverse", arg);
+       return retval;
+     }
+ 
+@@ -1066,7 +1067,7 @@
+     }
+   if (nr != nc)
+     {
+-      gripe_square_matrix_required ("ginverse");
++      err_square_matrix_required ("ginverse", "");
+       return retval;
+     }
+ 
+@@ -1143,7 +1144,7 @@
+   if (!galois_type_loaded || (arg.type_id () !=
+                               octave_galois::static_type_id ()))
+     {
+-      gripe_wrong_type_arg ("gdet", arg);
++      err_wrong_type_arg ("gdet", arg);
+       return retval;
+     }
+ 
+@@ -1164,7 +1165,7 @@
+ 
+   if (nr != nc)
+     {
+-      gripe_square_matrix_required ("det");
++      err_square_matrix_required ("det", "");
+       return retval;
+     }
+ 
+@@ -1203,7 +1204,7 @@
+   if (!galois_type_loaded || (arg.type_id () !=
+                               octave_galois::static_type_id ()))
+     {
+-      gripe_wrong_type_arg ("grank", arg);
++      err_wrong_type_arg ("grank", arg);
+       return retval;
+     }
+ 
+@@ -1333,7 +1334,7 @@
+   if (!galois_type_loaded || (args(0).type_id () !=
+                               octave_galois::static_type_id ()))
+     {
+-      gripe_wrong_type_arg ("rsenc", args(0));
++      err_wrong_type_arg ("rsenc", args(0));
+       return retval;
+     }
+ 
+@@ -1874,7 +1875,7 @@
+   if (!galois_type_loaded || (args(0).type_id () !=
+                               octave_galois::static_type_id ()))
+     {
+-      gripe_wrong_type_arg ("rsdec", args(0));
++      err_wrong_type_arg ("rsdec", args(0));
+       return retval;
+     }
+ 
+diff -Naur a/src/ov-galois.cc b/src/ov-galois.cc
+--- a/src/ov-galois.cc	2018-07-01 15:39:16.000000000 -0400
++++ b/src/ov-galois.cc	2018-07-01 15:44:50.000000000 -0400
+@@ -22,7 +22,7 @@
+ 
+ #include <octave/config.h>
+ #include <octave/byte-swap.h>
+-#include <octave/gripes.h>
++#include <octave/errwarn.h>
+ #include <octave/lo-ieee.h>
+ #include <octave/oct-locbuf.h>
+ #include <octave/oct-obj.h>
+@@ -328,13 +328,13 @@
+ 
+   if (rows () > 0 && columns () > 0)
+     {
+-      gripe_implicit_conversion ("Octave:array-as-scalar",
++      warn_implicit_conversion ("Octave:array-as-scalar",
+                                  "real matrix", "real scalar");
+ 
+       retval = (double) gval (0, 0);
+     }
+   else
+-    gripe_invalid_conversion ("galois", "real scalar");
++    err_invalid_conversion ("galois", "real scalar");
+ 
+   return retval;
+ }
+@@ -348,13 +348,13 @@
+ 
+   if (rows () > 0 && columns () > 0)
+     {
+-      gripe_implicit_conversion ("Octave:array-as-scalar",
++      warn_implicit_conversion ("Octave:array-as-scalar",
+                                  "real matrix", "real scalar");
+ 
+       retval = (double) gval (0, 0);
+     }
+   else
+-    gripe_invalid_conversion ("galois", "complex scalar");
++    err_invalid_conversion ("galois", "complex scalar");
+ 
+   return retval;
+ }
+@@ -719,7 +719,7 @@
+   H5Gclose (group_hid);
+ 
+ #elif defined (HAVE_OCTAVE_BASE_VALUE_GRIPE_LOAD_SAVE)
+-  gripe_save ("hdf5");
++  err_save ("hdf5");
+ #else
+   warning ("galois: saving hdf5 files not available");
+ #endif
+@@ -829,7 +829,7 @@
+   H5Dclose (data_hid);
+ 
+ #elif defined (HAVE_OCTAVE_BASE_VALUE_GRIPE_LOAD_SAVE)
+-  gripe_load ("hdf5");
++  err_load ("hdf5");
+ #else
+   warning ("galois: loading hdf5 files not available");
+ #endif
